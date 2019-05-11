@@ -44,39 +44,11 @@ import com.amazonaws.services.ec2.model.Region;
 
 public class EC2Launch {
 
-    /*
-     * Before running the code:
-     *      Fill in your AWS access credentials in the provided credentials
-     *      file template, and be sure to move the file to the default location
-     *      (~/.aws/credentials) where the sample code will load the
-     *      credentials from.
-     *      https://console.aws.amazon.com/iam/home?#security_credential
-     *
-     * WARNING:
-     *      To avoid accidental leakage of your credentials, DO NOT keep
-     *      the credentials file in your source directory.
-     */
 
     static AmazonEC2      ec2;
 
-    /**
-     * The only information needed to create a client are security credentials
-     * consisting of the AWS Access Key ID and Secret Access Key. All other
-     * configuration, such as the service endpoints, are performed
-     * automatically. Client parameters, such as proxies, can be specified in an
-     * optional ClientConfiguration object when constructing a client.
-     *
-     * @see com.amazonaws.auth.BasicAWSCredentials
-     * @see com.amazonaws.auth.PropertiesCredentials
-     * @see com.amazonaws.ClientConfiguration
-     */
+    
     private static void init() throws Exception {
-
-        /*
-         * The ProfileCredentialsProvider will return your [default]
-         * credential profile by reading from the credentials file located at
-         * (~/.aws/credentials).
-         */
         AWSCredentials credentials = null;
         try {
             credentials = new ProfileCredentialsProvider().getCredentials();
@@ -87,8 +59,10 @@ public class EC2Launch {
                     "location (~/.aws/credentials), and is in valid format.",
                     e);
         }
-    ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
-}
+        if(ec2==null){
+            ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+        }
+    }
 
 
     public static void main(String[] args) throws Exception {
@@ -111,6 +85,7 @@ public class EC2Launch {
          * the terminate the started instance.
          */
         try {
+
             DescribeAvailabilityZonesResult availabilityZonesResult = ec2.describeAvailabilityZones();
             System.out.println("You have access to " + availabilityZonesResult.getAvailabilityZones().size() +
                     " Availability Zones.");
@@ -123,6 +98,7 @@ public class EC2Launch {
             for (Reservation reservation : reservations) {
                 instances.addAll(reservation.getInstances());
             }
+
 
             System.out.println("You have " + instances.size() + " Amazon EC2 instance(s) running.");
             System.out.println("Starting a new instance.");
@@ -153,7 +129,7 @@ public class EC2Launch {
             //Add measure metrics
             System.out.println("You have " + instances.size() + " Amazon EC2 instance(s) running.");
             System.out.println("Waiting 1 minute. See your instance in the AWS console...");
-            Thread.sleep(60000);
+            Thread.sleep(60000 * 10);
             System.out.println("Terminating the instance.");
             TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
             termInstanceReq.withInstanceIds(newInstanceId);
