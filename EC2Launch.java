@@ -128,7 +128,7 @@ public class EC2Launch {
             //Remove the logic below
             //Add measure metrics
             System.out.println("You have " + instances.size() + " Amazon EC2 instance(s) running.");
-            System.out.println("Waiting 1 minute. See your instance in the AWS console...");
+            System.out.println("Waiting 10 minute. See your instance in the AWS console...");
             Thread.sleep(60000 * 10);
             System.out.println("Terminating the instance.");
             TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
