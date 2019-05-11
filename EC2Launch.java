@@ -42,14 +42,21 @@ import com.amazonaws.services.ec2.model.DescribeRegionsResult;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
 import com.amazonaws.services.ec2.model.Region;
 
+import java.util.*;
+import java.io.*;
+
+
 public class EC2Launch {
 
-
     static AmazonEC2      ec2;
+
 
     
     private static void init() throws Exception {
         AWSCredentials credentials = null;
+
+        
+
         try {
             credentials = new ProfileCredentialsProvider().getCredentials();
         } catch (Exception e) {
@@ -71,6 +78,10 @@ public class EC2Launch {
         System.out.println("Welcome to the AWS Java SDK!");
         System.out.println("===========================================");
 
+        //load ec2 properties from file
+        FileReader reader=new FileReader("config.cfg");
+        Properties p=new Properties();
+        p.load(reader);
        
         init();
         /*
@@ -106,12 +117,12 @@ public class EC2Launch {
                new RunInstancesRequest();
 
             /* TODO: configure to use your AMI, key and security group */
-            runInstancesRequest.withImageId("ami-0b419fca530bd25a0")
+            runInstancesRequest.withImageId(p.getProperty("ami"))
                                .withInstanceType("t2.micro")
                                .withMinCount(1)
                                .withMaxCount(1)
-                               .withKeyName("cnv-proj-aws")
-                               .withSecurityGroups("cnv-ssh+http");
+                               .withKeyName(p.getProperty("key_file"))
+                               .withSecurityGroups(p.getProperty("security_group"));
             RunInstancesResult runInstancesResult =
                ec2.runInstances(runInstancesRequest);
             String newInstanceId = runInstancesResult.getReservation().getInstances()
@@ -142,4 +153,8 @@ public class EC2Launch {
                 System.out.println("Request ID: " + ase.getRequestId());
         }
     }
+
+
 }
+
+
