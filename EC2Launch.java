@@ -106,12 +106,12 @@ public class EC2Launch {
                new RunInstancesRequest();
 
             /* TODO: configure to use your AMI, key and security group */
-            runInstancesRequest.withImageId("ami-0b419fca530bd25a0")
+            runInstancesRequest.withImageId("ami-0695e6964cc5f5020")
                                .withInstanceType("t2.micro")
                                .withMinCount(1)
                                .withMaxCount(1)
-                               .withKeyName("cnv-proj-aws")
-                               .withSecurityGroups("cnv-ssh+http");
+                               .withKeyName("CNV-LAB-AWS")
+                               .withSecurityGroups("CNV-SECURITY-GROUP");
             RunInstancesResult runInstancesResult =
                ec2.runInstances(runInstancesRequest);
             String newInstanceId = runInstancesResult.getReservation().getInstances()
