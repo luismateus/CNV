@@ -13,6 +13,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,7 @@ import com.amazonaws.services.cloudwatch.model.Datapoint;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
+import com.amazonaws.services.ec2.model.StopInstancesRequest;
 
 
 import com.amazonaws.services.ec2.model.DescribeRegionsResult;
@@ -46,9 +48,21 @@ public class EC2Launch {
 
 
     static AmazonEC2      ec2;
+    private ArrayList<Instance> instances;
+    private int pending;
+    private int running;
+    private int shuttingDown;
+    private int terminated;
 
-    
-    private static void init() throws Exception {
+    public EC2Launch(){
+        try{
+            init();
+        }catch(Exception e){
+            System.out.println("Caught Exception: " + e.getMessage());
+        }
+    }
+
+    private void init() throws Exception {
         AWSCredentials credentials = null;
         try {
             credentials = new ProfileCredentialsProvider().getCredentials();
@@ -63,49 +77,88 @@ public class EC2Launch {
             ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
         }
     }
+    
+
+    public ArrayList<Instance> getInstances(){
+        updateInstances();
+        return this.instances;
+    }
 
 
-    public static void main(String[] args) throws Exception {
+    public void updateInstances(){
+        DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
+        List<Reservation> reservations = describeInstancesRequest.getReservations();
+        Set<Instance> aux = new HashSet<Instance>();
 
-        System.out.println("===========================================");
-        System.out.println("Welcome to the AWS Java SDK!");
-        System.out.println("===========================================");
+        for (Reservation reservation : reservations) {
+            aux.addAll(reservation.getInstances());
+        }
+        this.instances = new ArrayList<Instance>();
+        this.pending = 0;
+        this.running = 0;
+        this.shuttingDown = 0;
+        this.terminated = 0;
+        int stateAUX = -1;
+        for(Instance instance : aux){                
+            stateAUX = instance.getState().getCode();
+            switch(stateAUX) {
+                case 0:
+                    this.pending++;
+                    break;
+                case 16:
+                    this.running++;
+                    this.instances.add(instance);
+                    break;
+                case 32:
+                    this.shuttingDown++;
+                    break;
+                case 48:
+                    this.terminated++;
+                    break;              
+                default:
+                    System.out.println("\u001B[0m" + "Unkown Code: " + stateAUX);
+              }
+        }
+    }
 
-       
-        init();
-        /*
-         * Amazon EC2
-         *
-         * The AWS EC2 client allows you to create, delete, and administer
-         * instances programmatically.
-         *
-         * In this sample, we use an EC2 client to get a list of all the
-         * availability zones, and all instances sorted by reservation id, then 
-         * create an instance, list existing instances again, wait a minute and 
-         * the terminate the started instance.
-         */
+    public void printInstancesReport(){
+        updateInstances();
+        System.out.println();
+        System.out.println("\u001B[0m" + "==========================================================");
+        System.out.println("\u001B[96m" + "==========================================================");
+        System.out.println("\u001B[96m" + "================= INSTANCES STATE REPORT =================");
+        System.out.println("\u001B[96m" + "==========================================================");
+        System.out.println("\u001B[96m" + "You have " + this.shuttingDown + " SHUTTING DOWN instances");
+        System.out.println("\u001B[96m" + "You have " + this.terminated + " TERMINATED instances");
+        System.out.println("\u001B[96m" + "You have " + this.pending + " PENDING instances");
+        System.out.println("\u001B[96m" + "You have " + this.running + " RUNNING instances");
+        if(running == 0){
+            System.out.println("\u001B[0m" + "==========================================================");
+            return;
+        }
+        System.out.println("\u001B[96m" + "=================== Running Instances ====================");
+        int i=0;
+        for(Instance instance : instances){
+            System.out.println("\u001B[96m" + "============================ " + i + " ===========================");
+            System.out.println("\u001B[96m" + "Instance ID: " + instance.getInstanceId());
+            System.out.println("\u001B[96m" + "Instance IP: " + instance.getPublicIpAddress());
+            i++;
+        }
+        System.out.println("\u001B[96m" + "==========================================================");
+        System.out.println("\u001B[0m" + "==========================================================");
+        System.out.println();
+    }
+
+
+    public void launchInstance() throws Exception {
+        System.out.println("\u001B[0m" + "==========================================================");
+        System.out.println("\u001B[92m" + "================= LAUNCHING NEW INSTANCE =================");
         try {
 
             DescribeAvailabilityZonesResult availabilityZonesResult = ec2.describeAvailabilityZones();
-            System.out.println("You have access to " + availabilityZonesResult.getAvailabilityZones().size() +
-                    " Availability Zones.");
-            /* using AWS Ireland. 
-             * TODO: Pick the zone where you have your AMI, sec group and keys */
-            DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
-            List<Reservation> reservations = describeInstancesRequest.getReservations();
-            Set<Instance> instances = new HashSet<Instance>();
-
-            for (Reservation reservation : reservations) {
-                instances.addAll(reservation.getInstances());
-            }
-
-
-            System.out.println("You have " + instances.size() + " Amazon EC2 instance(s) running.");
-            System.out.println("Starting a new instance.");
             RunInstancesRequest runInstancesRequest =
                new RunInstancesRequest();
 
-            /* TODO: configure to use your AMI, key and security group */
             runInstancesRequest.withImageId("ami-0695e6964cc5f5020")
                                .withInstanceType("t2.micro")
                                .withMinCount(1)
@@ -116,30 +169,34 @@ public class EC2Launch {
                ec2.runInstances(runInstancesRequest);
             String newInstanceId = runInstancesResult.getReservation().getInstances()
                                       .get(0).getInstanceId();
-            describeInstancesRequest = ec2.describeInstances();
-            reservations = describeInstancesRequest.getReservations();
-            instances = new HashSet<Instance>();
-
-            for (Reservation reservation : reservations) {
-                instances.addAll(reservation.getInstances());
-            }
-
-            //TODO: create a load balancer that controls when to start/terminate an instance
-            //Remove the logic below
-            //Add measure metrics
-            System.out.println("You have " + instances.size() + " Amazon EC2 instance(s) running.");
-            System.out.println("Waiting 10 minute. See your instance in the AWS console...");
-            Thread.sleep(60000 * 10);
-            System.out.println("Terminating the instance.");
-            TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
-            termInstanceReq.withInstanceIds(newInstanceId);
-            ec2.terminateInstances(termInstanceReq);
-            
+            System.out.println("\u001B[92m" + "Instance launched :)");
+            System.out.println("\u001B[92m" + "==========================================================");
+            System.out.println("\u001B[0m" + "==========================================================");
+            System.out.println();
         } catch (AmazonServiceException ase) {
                 System.out.println("Caught Exception: " + ase.getMessage());
                 System.out.println("Reponse Status Code: " + ase.getStatusCode());
                 System.out.println("Error Code: " + ase.getErrorCode());
                 System.out.println("Request ID: " + ase.getRequestId());
         }
+    }
+    
+    public void terminateInstances(ArrayList<Instance> instances){
+        for(Instance instance : instances){
+            terminateInstance(instance);
+        }
+    }
+
+    public void terminateInstance(Instance instance){
+        System.out.println("\u001B[0m" + "==========================================================");
+        System.out.println("\u001B[91m" + "================== TERMINATING INSTANCE ==================");
+        System.out.println("\u001B[91m" + "ID: " + instance.getInstanceId() + "      IP: " + instance.getPublicIpAddress());
+        TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
+        termInstanceReq.withInstanceIds(instance.getInstanceId());
+        ec2.terminateInstances(termInstanceReq);
+        System.out.println("\u001B[91m" + "Instance terminated :)");
+        System.out.println("\u001B[91m" + "==========================================================");
+        System.out.println("\u001B[0m" + "==========================================================");
+        System.out.println();
     }
 }
