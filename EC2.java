@@ -44,8 +44,10 @@ import com.amazonaws.services.ec2.model.DescribeRegionsResult;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
 import com.amazonaws.services.ec2.model.Region;
 
-public class EC2Launch {
+import java.util.*;
+import java.io.*;
 
+public class EC2 {
 
     static AmazonEC2      ec2;
     private ArrayList<Instance> instances;
@@ -54,7 +56,11 @@ public class EC2Launch {
     private int shuttingDown;
     private int terminated;
 
-    public EC2Launch(){
+    private String ami;
+    private String key_file;
+    private String security_group;
+
+    public EC2(){
         try{
             init();
         }catch(Exception e){
@@ -66,6 +72,17 @@ public class EC2Launch {
         AWSCredentials credentials = null;
         try {
             credentials = new ProfileCredentialsProvider().getCredentials();
+
+            //load ec2 properties from file
+            FileReader reader=new FileReader("config.cfg");
+            Properties p=new Properties();
+            p.load(reader);
+
+            ami = p.getProperty("ami");
+            key_file = p.getProperty("key_file");
+            security_group = p.getProperty("security_group");
+
+
         } catch (Exception e) {
             throw new AmazonClientException(
                     "Cannot load the credentials from the credential profiles file. " +
@@ -78,12 +95,10 @@ public class EC2Launch {
         }
     }
     
-
     public ArrayList<Instance> getInstances(){
         updateInstances();
         return this.instances;
     }
-
 
     public void updateInstances(){
         DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
@@ -149,7 +164,6 @@ public class EC2Launch {
         System.out.println();
     }
 
-
     public void launchInstance() throws Exception {
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[92m" + "================= LAUNCHING NEW INSTANCE =================");
@@ -159,12 +173,12 @@ public class EC2Launch {
             RunInstancesRequest runInstancesRequest =
                new RunInstancesRequest();
 
-            runInstancesRequest.withImageId("ami-0695e6964cc5f5020")
+            runInstancesRequest.withImageId(ami)
                                .withInstanceType("t2.micro")
                                .withMinCount(1)
                                .withMaxCount(1)
-                               .withKeyName("CNV-LAB-AWS")
-                               .withSecurityGroups("CNV-SECURITY-GROUP");
+                               .withKeyName(key_file)
+                               .withSecurityGroups(security_group);
             RunInstancesResult runInstancesResult =
                ec2.runInstances(runInstancesRequest);
             String newInstanceId = runInstancesResult.getReservation().getInstances()
