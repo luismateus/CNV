@@ -30,7 +30,7 @@ import javax.imageio.ImageIO;
 
 public class CleanInstances {
 
-    private static EC2Launch manager = new EC2Launch();
+    private static EC2 manager = new EC2();
 
     public static void main(final String[] args) throws Exception {
         terminateAllInstances();
