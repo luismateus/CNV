@@ -39,29 +39,29 @@ import javax.imageio.ImageIO;
 
 public class Manager {
 
-    private static AutoScaler autoScaler = new AutoScaler();
-    private static LoadBalancer loadBalancer = new LoadBalancer();
-
+    private static AutoScaler autoScaler = AutoScaler.getAutoScaler();
+    private static LoadBalancer loadBalancer = LoadBalancer.getLoadBalancer();
+    
 	public static void main(final String[] args) throws Exception {
 		// LOCAL
-		//final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8000), 0);
+		final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8000), 0);
 		// REMOTE
-		final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+		//final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         
 		server.createContext("/climb", new HandleRequest(autoScaler, loadBalancer));
 
 		// be aware! infinite pool of threads!
 		server.setExecutor(Executors.newCachedThreadPool());
         server.start();
-        
+        System.out.println();
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[0m" + "==========================================================");
-        System.out.println("\u001B[0m" + "===== MANAGER IS LISTENING AT: " + server.getAddress().toString() + " =====");
+        System.out.println("\u001B[0m" + "======== MANAGER IS LISTENING AT: " + server.getAddress().toString() + " ========");
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[0m" + "==========================================================");
-
+        System.out.println();
         while(true){
             System.out.println();
             System.out.println("\u001B[0m" + "========================== MENU ==========================");
@@ -70,6 +70,7 @@ public class Manager {
             System.out.println("\u001B[0m" + "3 - Terminate one instance");
             System.out.println("\u001B[0m" + "4 - Terminate all instances");
             System.out.println("\u001B[0m" + "==========================================================");
+            System.out.println();
             Scanner scanner = new Scanner(System.in);
             int choice = scanner.nextInt();
             switch (choice) {
@@ -125,11 +126,6 @@ public class Manager {
             OutputStream os = request.getResponseBody();
             os.write(response);
             os.close();
-        
-            System.out.println("\u001B[0m" + "==========================================================");
-            System.out.println("\u001B[0m" + "RESPONDING");
-            //System.out.println("\u001B[0m" + "Instance " + chosenInstance.getInstanceId() + " with the IP " + chosenInstance.getPublicIpAddress() + " responded to  it's request :)");
-            System.out.println("\u001B[0m" + "==========================================================");
         }
 	}
 }
