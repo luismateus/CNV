@@ -39,14 +39,26 @@ import javax.imageio.ImageIO;
 public class LoadBalancer {
 
     private boolean toogle = true;
+    private static LoadBalancer loadBalancer = null;
+    //METRICS
+
+    private LoadBalancer(){}
+
+    public static LoadBalancer getLoadBalancer(){ 
+        if (loadBalancer == null) 
+            loadBalancer = new LoadBalancer(); 
+        return loadBalancer; 
+    } 
 
 	public byte[] handleRequest(final HttpExchange request, ArrayList<Instance> instances) throws IOException {
+        System.out.println();
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[93m" + "==========================================================");
         Instance chosenInstance = chooseInstance(instances);
         System.out.println("\u001B[93m" + "Forwarding request to instance " + chosenInstance.getInstanceId() + " with the IP " + chosenInstance.getPublicIpAddress());
         System.out.println("\u001B[93m" + "==========================================================");
         System.out.println("\u001B[0m" + "==========================================================");
+        System.out.println();
         return forwardRequest(request, chosenInstance);
     }
 
@@ -65,6 +77,13 @@ public class LoadBalancer {
                 rd.close();
                 connection.disconnect();
             }
+            System.out.println();
+            System.out.println("\u001B[0m" + "==========================================================");
+            System.out.println("\u001B[93m" + "==========================================================");
+            System.out.println("\u001B[93m" + "Response from Instance " + instance.getInstanceId() + " with the IP " + instance.getPublicIpAddress() + " responded to  it's request :)");
+            System.out.println("\u001B[93m" + "==========================================================");
+            System.out.println("\u001B[0m" + "==========================================================");
+            System.out.println();
             return response;
         }catch(Exception e){
             e.printStackTrace();
@@ -73,6 +92,7 @@ public class LoadBalancer {
     }
 
     public Instance chooseInstance(ArrayList<Instance> instances){
+        updateMetrics();
         if(toogle){
             toogle = false;
             return instances.get(0);
@@ -81,5 +101,9 @@ public class LoadBalancer {
             toogle = true;
             return instances.get(1);
         }
+    }
+
+    public updateMetrics(){
+
     }
 }
