@@ -54,12 +54,11 @@ public class WebServer {
 			// Break it down into String[].
 			final String[] params = query.split("&");
 
-			/*
-			for(String p: params) {
-				System.out.println(p);
-			}
-			*/
 
+			// for(String p: params) {
+			// 	System.out.println(p);
+			// }
+			
 			// Store as if it was a direct call to SolverMain.
 			final ArrayList<String> newArgs = new ArrayList<>();
 			for (final String p : params) {
@@ -146,7 +145,6 @@ public class WebServer {
 
 			final OutputStream os = t.getResponseBody();
 			Files.copy(responseFile.toPath(), os);
-
 
 			os.close();
 
