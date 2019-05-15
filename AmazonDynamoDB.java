@@ -44,7 +44,7 @@ import com.amazonaws.services.dynamodbv2.util.TableUtils;
  * This sample demonstrates how to perform a few simple operations with the
  * Amazon DynamoDB service.
  */
-public class AmazonDynamoDBSample {
+public class AmazonDynamoDB {
 
     /*
      * Before running the code:
@@ -100,6 +100,8 @@ public class AmazonDynamoDBSample {
         try {
             String tableName = "cnv-metrics";
 
+            System.out.println("Creating "+tableName + " table");
+
             // Create a table with a primary hash key named 'name', which holds a string
             CreateTableRequest createTableRequest = new CreateTableRequest().withTableName(tableName)
                 .withKeySchema(new KeySchemaElement().withAttributeName("name").withKeyType(KeyType.HASH))
@@ -115,7 +117,7 @@ public class AmazonDynamoDBSample {
             DescribeTableRequest describeTableRequest = new DescribeTableRequest().withTableName(tableName);
             TableDescription tableDescription = dynamoDB.describeTable(describeTableRequest).getTable();
             System.out.println("Table Description: " + tableDescription);
-
+            /*
             // Add an item
             // To be done in WebServer
             Map<String, AttributeValue> item = newItem("Bill & Ted's Excellent Adventure", 1989, "****", "James", "Sara");
@@ -140,7 +142,7 @@ public class AmazonDynamoDBSample {
             ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
             ScanResult scanResult = dynamoDB.scan(scanRequest);
             System.out.println("Result: " + scanResult);
-
+        */
         } catch (AmazonServiceException ase) {
             System.out.println("Caught an AmazonServiceException, which means your request made it "
                     + "to AWS, but was rejected with an error response for some reason.");
