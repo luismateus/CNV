@@ -29,19 +29,26 @@ import javax.imageio.ImageIO;
 
 public class AutoScaler {
 
-    private static EC2 manager = new EC2();
+    private static AutoScaler autoScaler; 
+
+    private static EC2 ec2;
 
     // Starts the dynamic and automatic process of managing the number of running instances
-	public AutoScaler(){
-        //dumbAuto();
-        //launch();
-        //launch();
+	private AutoScaler(){
+        ec2 = new EC2();
+        autoScalling();
     }
+
+    public static AutoScaler getAutoScaler() { 
+        if (autoScaler == null) 
+            autoScaler = new AutoScaler(); 
+        return autoScaler; 
+    } 
 
     // To launch a new instance
     public void launch(){
         try{
-            manager.launchInstance();
+            ec2.launchInstance();
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -49,44 +56,41 @@ public class AutoScaler {
 
     // To terminate an especific instance
     public void terminate(Instance instance){
-        manager.terminateInstance(instance);
+        ec2.terminateInstance(instance);
     }
 
     // To terminate all the instances that are running
     // Be carefull, since pending instances are not running yet they [pending] will not be terminated
     public void terminateAllInstances(){
-        manager.terminateInstances(getInstances());
+        ec2.terminateInstances(getInstances());
         printInstancesReport();
     }
 
     // Prints a report about the instances, their states, IDs and IP addresses
     // Returns an array list with the [RUNNING] instances
     public ArrayList<Instance> getInstances(){
-        return manager.getInstances();
+        return ec2.getInstances();
     }
 
-    public void dumbAuto(){
+    public void autoScalling(){
         try{
-            launch();
-            launch();
-            printInstancesReport();
-            Timer time = new Timer(); // Instantiate Timer Object
-            TerminateTask terminate = new TerminateTask();
-		    LaunchTask launch = new LaunchTask(); // Instantiate SheduledTask class
-            terminate.setAutoScaler(this);
-            launch.setAutoScaler(this);
-            time.schedule(terminate, 30000, 60000); // Create Repetitively task for every 1 secs
-            time.schedule(launch, 60000, 60000);    
+            Timer time = new Timer(); 
+            ScallingTask scallingTask = new ScallingTask();
+            time.schedule(scallingTask, 0, 5000);    
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
     }
 
     public void printInstancesReport(){
-        manager.printInstancesReport();
+        ec2.printInstancesReport();
     }
 
     public EC2 getManager(){
-        return manager;
+        return ec2;
+    }
+
+    public int getPendingInstances(){
+        return ec2.getPendingInstances();
     }
 }
