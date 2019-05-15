@@ -69,6 +69,47 @@ public class EC2 {
         }
     }
 
+    public EC2(String manager){
+        try{
+            initManager();
+        }catch(Exception e){
+            System.out.println("Caught Exception: " + e.getMessage());
+        }
+    }
+
+    public int getPendingInstances(){
+        updateInstances();
+        return this.pending;
+    }
+
+    // MUDAR AS KEYS E CENAS
+    private void initManager() throws Exception {
+        AWSCredentials credentials = null;
+        try {
+            credentials = new ProfileCredentialsProvider().getCredentials();
+
+            //load ec2 properties from file
+            FileReader reader=new FileReader("config.cfg");
+            Properties p=new Properties();
+            p.load(reader);
+
+            /*ami = p.getProperty("ami"); ISTO TEM QUE MUDAR PARA LANÇAR O MANAGER PARA A IMAGEM DO MANAGER */
+            key_file = p.getProperty("key_file");
+            security_group = p.getProperty("security_group");
+
+
+        } catch (Exception e) {
+            throw new AmazonClientException(
+                    "Cannot load the credentials from the credential profiles file. " +
+                    "Please make sure that your credentials file is at the correct " +
+                    "location (~/.aws/credentials), and is in valid format.",
+                    e);
+        }
+        if(ec2==null){
+            ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+        }
+    }
+
     private void init() throws Exception {
         AWSCredentials credentials = null;
         try {
@@ -215,6 +256,7 @@ public class EC2 {
     }
 
     public void launchInstance() throws Exception {
+        System.out.println();
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[92m" + "================= LAUNCHING NEW INSTANCE =================");
         try {
@@ -252,6 +294,7 @@ public class EC2 {
     }
 
     public void terminateInstance(Instance instance){
+        System.out.println();
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println("\u001B[91m" + "================== TERMINATING INSTANCE ==================");
         System.out.println("\u001B[91m" + "ID: " + instance.getInstanceId() + "      IP: " + instance.getPublicIpAddress());
