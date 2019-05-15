@@ -1,6 +1,6 @@
 #!/bin/bash
 #PATH=/home/hypz/Documents/workspace/CNV/CNV-proj
-PATH=/home/ec2-user/CNV-proj
+PATH=/Users/joaorobalo/Desktop/CNV/CNV-proj
 
 cd $PATH
 /bin/rm pt/ulisboa/tecnico/cnv/server/WebServer.class

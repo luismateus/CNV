@@ -21,7 +21,6 @@ import pt.ulisboa.tecnico.cnv.solver.SolverFactory;
 import com.amazonaws.services.ec2.model.Instance;
 import java.util.Set;
 import java.util.HashSet;
-import com.amazonaws.services.ec2.model.Instance;
 import java.util.Timer;
 
 
@@ -30,11 +29,13 @@ import javax.imageio.ImageIO;
 
 public class AutoScaler {
 
-    private static EC2Launch manager = new EC2Launch();
+    private static EC2 manager = new EC2();
 
     // Starts the dynamic and automatic process of managing the number of running instances
 	public AutoScaler(){
-        dumbAuto();
+        //dumbAuto();
+        //launch();
+        //launch();
     }
 
     // To launch a new instance
@@ -85,7 +86,7 @@ public class AutoScaler {
         manager.printInstancesReport();
     }
 
-    public EC2Launch getManager(){
+    public EC2 getManager(){
         return manager;
     }
 }

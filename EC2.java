@@ -47,8 +47,7 @@ import com.amazonaws.services.ec2.model.Region;
 import java.util.*;
 import java.io.*;
 
-public class EC2Launch {
-
+public class EC2 {
 
     static AmazonEC2      ec2;
     private ArrayList<Instance> instances;
@@ -61,9 +60,7 @@ public class EC2Launch {
     private String key_file;
     private String security_group;
 
-    
-
-    public EC2Launch(){
+    public EC2(){
         try{
             init();
         }catch(Exception e){
@@ -98,12 +95,10 @@ public class EC2Launch {
         }
     }
     
-
     public ArrayList<Instance> getInstances(){
         updateInstances();
         return this.instances;
     }
-
 
     public void updateInstances(){
         DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
@@ -168,7 +163,6 @@ public class EC2Launch {
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println();
     }
-
 
     public void launchInstance() throws Exception {
         System.out.println("\u001B[0m" + "==========================================================");
