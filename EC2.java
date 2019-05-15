@@ -50,6 +50,7 @@ import java.io.*;
 public class EC2 {
 
     static AmazonEC2      ec2;
+    static AmazonCloudWatch cloudWatch;
     private ArrayList<Instance> instances;
     private int pending;
     private int running;
@@ -92,6 +93,7 @@ public class EC2 {
         }
         if(ec2==null){
             ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+            cloudWatch = AmazonCloudWatchClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
         }
     }
     
@@ -162,6 +164,54 @@ public class EC2 {
         System.out.println("\u001B[96m" + "==========================================================");
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println();
+        instanceMetricsReport();
+    }
+
+
+    public void instanceMetricsReport(){
+        DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
+        List<Reservation> reservations = describeInstancesRequest.getReservations();
+        Set<Instance> instances = new HashSet<Instance>();
+
+        for (Reservation reservation : reservations) {
+            instances.addAll(reservation.getInstances());
+        }
+        System.out.println("total instances = " + instances.size());
+
+        long offsetInMilliseconds = 1000 * 60 * 10;
+
+        Dimension instanceDimension = new Dimension();
+        instanceDimension.setName("InstanceId");
+        List<Dimension> dims = new ArrayList<Dimension>();
+        dims.add(instanceDimension);
+
+        for (Instance instance : instances) {
+            String name = instance.getInstanceId();
+            String state = instance.getState().getName();
+            if (state.equals("running")) { 
+                System.out.println("running instance id = " + name);
+                instanceDimension.setValue(name);
+
+        GetMetricStatisticsRequest request = new GetMetricStatisticsRequest()
+            .withStartTime(new Date(new Date().getTime() - offsetInMilliseconds))
+            .withNamespace("AWS/EC2")
+            .withPeriod(60)
+            .withMetricName("CPUUtilization")
+            .withStatistics("Average")
+            .withDimensions(instanceDimension)
+            .withEndTime(new Date());
+                GetMetricStatisticsResult getMetricStatisticsResult = 
+                    cloudWatch.getMetricStatistics(request);
+                List<Datapoint> datapoints = getMetricStatisticsResult.getDatapoints();
+                for (Datapoint dp : datapoints) {
+                System.out.println(" CPU utilization for instance " + name +
+                    " = " + dp.getAverage());
+                }
+            }else{
+                System.out.println("instance id = " + name);
+            }
+        System.out.println("Instance State : " + state +".");
+        }
     }
 
     public void launchInstance() throws Exception {
