@@ -306,4 +306,34 @@ public class EC2 {
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println();
     }
+
+    //RETURN 
+    public float getSystemCPUUsage(){
+        float CPUUsage = 0;
+        ArrayList<Instance> instances = getInstances();
+        for(Instance instance : instances)
+            CPUUsage += getInstanceCPUUsage(instance);
+
+        return (CPUUsage/instances.size());
+    }
+
+    // GET CPU USAGE DUMA INSTANCIA EM ESPECIFICO
+    public float getInstanceCPUUsage(Instance instance){
+        return 0.0f;
+    }
+
+    public Instance getMinimalCPUUsageInstance(){
+        float minCPUUsage = 101; // 101 since 100 is the maximum
+        Instance minInstance = null;
+        ArrayList<Instance> instances = getInstances();
+        for(Instance instance : instances){
+            float CPUUSAGE = getInstanceCPUUsage(instance);
+            if(CPUUSAGE < minCPUUsage){
+                minCPUUsage = CPUUSAGE;
+                minInstance = instance;
+            }
+        }
+        return minInstance;
+    }
+
 }
