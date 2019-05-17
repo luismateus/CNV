@@ -29,21 +29,49 @@ import javax.imageio.ImageIO;
 
 public class AutoScaler {
 
-    private static AutoScaler autoScaler; 
+    private static AutoScaler autoScaler;
+    private boolean terminateNextFlag;
 
     private static EC2 ec2;
 
     // Starts the dynamic and automatic process of managing the number of running instances
 	private AutoScaler(){
         ec2 = new EC2();
+        this.terminateNextFlag = false;
         autoScalling();
+    }
+
+    public void setTerminateNextFlag(boolean flag){
+        this.terminateNextFlag = flag;
+    }
+
+    public EC2 getEC2(){
+        return this.ec2;
+    }
+
+    public void checkIfTerminateAndTerminate(Instance instance){
+        boolean found = false;
+        ArrayList<Instance> occupiedInstances = LoadBalancer.getLoadBalancer().getOccupiedInstances();
+        for(Instance instanceO : occupiedInstances){
+            if((instance.getInstanceId()).equals(instanceO.getInstanceId())){
+                found = true;                    
+                break;
+            }
+        }
+        if(found){
+            return;
+        }
+        else{
+            terminateNextFlag = false;
+            terminate(instance);
+        }
     }
 
     public static AutoScaler getAutoScaler() { 
         if (autoScaler == null) 
             autoScaler = new AutoScaler(); 
         return autoScaler; 
-    } 
+    }
 
     // To launch a new instance
     public void launch(){
@@ -92,5 +120,13 @@ public class AutoScaler {
 
     public int getPendingInstances(){
         return ec2.getPendingInstances();
+    }
+
+    public float getSystemCPUUsage(){
+        return ec2.getSystemCPUUsage();
+    }
+    
+    public float getInstanceCPUUsage(Instance instance){
+        return ec2.getInstanceCPUUsage(instance);
     }
 }
