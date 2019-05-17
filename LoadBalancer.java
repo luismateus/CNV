@@ -40,6 +40,8 @@ public class LoadBalancer {
 
     private boolean toogle = true;
     private static LoadBalancer loadBalancer = null;
+    private ArrayList<Instance> ocupiedInstances = new ArrayList<Instance>();
+
     //METRICS
 
     private LoadBalancer(){}
@@ -64,6 +66,7 @@ public class LoadBalancer {
 
     public byte[] forwardRequest(HttpExchange request, Instance instance){
         try{
+            ocupiedInstances.add(instance);
             URL url = new URL("http://" + instance.getPublicIpAddress() + ":8000/climb?" + request.getRequestURI().getQuery());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -84,6 +87,8 @@ public class LoadBalancer {
             System.out.println("\u001B[93m" + "==========================================================");
             System.out.println("\u001B[0m" + "==========================================================");
             System.out.println();
+            ocupiedInstances.remove(instance);
+            AutoScaler.getAutoScaler().checkIfTerminateAndTerminate(instance);
             return response;
         }catch(Exception e){
             e.printStackTrace();
@@ -91,19 +96,14 @@ public class LoadBalancer {
         return null;
     }
 
-    public Instance chooseInstance(ArrayList<Instance> instances){
-        updateMetrics();
-        if(toogle){
-            toogle = false;
-            return instances.get(0);
-        }
-        else{
-            toogle = true;
-            return instances.get(1);
-        }
+    public ArrayList<Instance> getOccupiedInstances(){
+        return this.ocupiedInstances;
     }
 
-    public updateMetrics(){
-
+    public Instance chooseInstance(ArrayList<Instance> instances){
+        Instance instance = AutoScaler.getAutoScaler().getEC2().getMinimalCPUUsageInstance();
+        if(instance == null)
+            instance = instances.get(0);
+        return instance;
     }
 }
