@@ -60,7 +60,7 @@ public class StatisticsTool
 			System.exit(-1);
 		}
 
-	public static void doStatic(File in_dir) 
+	public static void doStatic(String filename) 
 		{
 			String filelist[] = in_dir.list();
 			int method_count = 0;
@@ -69,7 +69,7 @@ public class StatisticsTool
 			int class_count = 0;
 			
 			for (int i = 0; i < filelist.length; i++) {
-				String filename = filelist[i];
+				String filename = "AbstractSolverStrategy.class";
 				if (filename.endsWith(".class")) {
 					class_count++;
 					String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
@@ -85,7 +85,7 @@ public class StatisticsTool
 						instr_count += ia.size();
 					}
 				}
-			}
+//			}
 
 			System.out.println("Static information summary:");
 			System.out.println("Number of class files:  " + class_count);
@@ -418,7 +418,13 @@ public class StatisticsTool
 					File in_dir = new File(argv[1]);
 					
 					if (in_dir.isDirectory()) {
-						doStatic(in_dir);
+						String filelist[] = in_dir.list();
+						for (int i = 0; i < filelist.length; i++) {
+							String filename = filelist[i];
+
+							doStatic(filename);
+						}
+						
 					}
 					else {
 						printUsage();
