@@ -92,10 +92,15 @@ public class AmazonDynamoDBHandler {
             .withCredentials(credentialsProvider)
             .withRegion("us-east-1")
             .build();
+
+    }
+
+    public static AmazonDynamoDB getDB(){
+        return this.dynamoDB;
     }
 
     public static void main(String[] args) throws Exception {
-        init();
+        //init();
 
         try {
             String tableName = "cnv-metrics";
