@@ -11,9 +11,9 @@ public class ScallingTask extends TimerTask {
     private int pending;
     private ArrayList<Instance> runningInstances;
     private ArrayList<Instance> occupiedInstances;
-    private float MAX_CPU_USAGE = 100;
-    private float MAX_CPU_USAGE_BEFORE_LAUNCH = 0.75f;
-    private float MIN_CPU_USAGE_BEFORE_TERMINATE = 0.25f;
+    private double MAX_CPU_USAGE = 100;
+    private double MAX_CPU_USAGE_BEFORE_LAUNCH = 0.75f;
+    private double MIN_CPU_USAGE_BEFORE_TERMINATE = 0.25f;
 
     // Add your task here
 	public void run() {
@@ -46,11 +46,11 @@ public class ScallingTask extends TimerTask {
         }
     }
 
-    public float getSystemCPUUsage(){
+    public double getSystemCPUUsage(){
         return AutoScaler.getAutoScaler().getSystemCPUUsage();
     }
 
-    public float getInstanceCPUUsage(Instance instance){
+    public double getInstanceCPUUsage(Instance instance){
         return AutoScaler.getAutoScaler().getInstanceCPUUsage(instance);
     }
 

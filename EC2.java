@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.*; 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
@@ -52,6 +53,7 @@ public class EC2 {
     static AmazonEC2      ec2;
     static AmazonCloudWatch cloudWatch;
     private ArrayList<Instance> instances;
+    private Map<Instance, Double> instancesCPUUsage;
     private int pending;
     private int running;
     private int shuttingDown;
@@ -205,7 +207,6 @@ public class EC2 {
         System.out.println("\u001B[96m" + "==========================================================");
         System.out.println("\u001B[0m" + "==========================================================");
         System.out.println();
-        instanceMetricsReport();
     }
 
 
@@ -213,13 +214,14 @@ public class EC2 {
         DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
         List<Reservation> reservations = describeInstancesRequest.getReservations();
         Set<Instance> instances = new HashSet<Instance>();
+        Map<Instance, Double> instancesCPUUsage = new HashMap<Instance,Double>();
 
         for (Reservation reservation : reservations) {
             instances.addAll(reservation.getInstances());
         }
-        System.out.println("total instances = " + instances.size());
+        //System.out.println("total instances = " + instances.size());
 
-        long offsetInMilliseconds = 1000 * 60 * 10;
+        long offsetInMilliseconds = 1000 * 5;
 
         Dimension instanceDimension = new Dimension();
         instanceDimension.setName("InstanceId");
@@ -230,9 +232,9 @@ public class EC2 {
             String name = instance.getInstanceId();
             String state = instance.getState().getName();
             if (state.equals("running")) { 
-                System.out.println("running instance id = " + name);
+                //System.out.println("running instance id = " + name);
                 instanceDimension.setValue(name);
-
+        //System.out.println("HERE1!");
         GetMetricStatisticsRequest request = new GetMetricStatisticsRequest()
             .withStartTime(new Date(new Date().getTime() - offsetInMilliseconds))
             .withNamespace("AWS/EC2")
@@ -241,17 +243,20 @@ public class EC2 {
             .withStatistics("Average")
             .withDimensions(instanceDimension)
             .withEndTime(new Date());
+            //System.out.println("HERE2!");
                 GetMetricStatisticsResult getMetricStatisticsResult = 
                     cloudWatch.getMetricStatistics(request);
                 List<Datapoint> datapoints = getMetricStatisticsResult.getDatapoints();
                 for (Datapoint dp : datapoints) {
-                System.out.println(" CPU utilization for instance " + name +
-                    " = " + dp.getAverage());
+                //System.out.println("HERE3!");
+                //System.out.println(" CPU utilization for instance " + name + " = " + dp.getAverage());
+                double cpu = dp.getAverage();
+                instancesCPUUsage.put(instance,cpu);
                 }
             }else{
-                System.out.println("instance id = " + name);
+                //System.out.println("instance id = " + name);
             }
-        System.out.println("Instance State : " + state +".");
+        //System.out.println("Instance State : " + state +".");
         }
     }
 
@@ -308,32 +313,40 @@ public class EC2 {
     }
 
     //RETURN 
-    public float getSystemCPUUsage(){
-        float CPUUsage = 0;
+    public double getSystemCPUUsage(){
+        double CPUUsage = 0;
+        instanceMetricsReport();
         ArrayList<Instance> instances = getInstances();
-        for(Instance instance : instances)
-            CPUUsage += getInstanceCPUUsage(instance);
+        for(Instance instance : instances){
 
+            String name = instance.getInstanceId();
+            String state = instance.getState().getName();
+            if (state.equals("running")) { 
+                CPUUsage += getInstanceCPUUsage(instance);
+            }
+        }
         return (CPUUsage/instances.size());
     }
 
-    // GET CPU USAGE DUMA INSTANCIA EM ESPECIFICO
-    public float getInstanceCPUUsage(Instance instance){
-        return 0.0f;
+    public double getInstanceCPUUsage(Instance instance){
+        //System.out.println("min_cpu: " +  instancesCPUUsage.get(instance));
+        //return instancesCPUUsage.get(instance)*100; //to percentage?
+        double dummy = 10;
+        return dummy;
     }
 
-    public Instance getMinimalCPUUsageInstance(){
-        float minCPUUsage = 101; // 101 since 100 is the maximum
-        Instance minInstance = null;
+    public Instance chooseMinInstance(){
         ArrayList<Instance> instances = getInstances();
+        Instance chosen = null;
+        double min_cpu = 101; //100 is max
+        //instanceMetricsReport();
         for(Instance instance : instances){
-            float CPUUSAGE = getInstanceCPUUsage(instance);
-            if(CPUUSAGE < minCPUUsage){
-                minCPUUsage = CPUUSAGE;
-                minInstance = instance;
+            double cpuUsage = getInstanceCPUUsage(instance);
+            if(cpuUsage < min_cpu){
+                min_cpu = cpuUsage;
+                chosen = instance;
             }
         }
-        return minInstance;
+        return chosen;
     }
-
 }
