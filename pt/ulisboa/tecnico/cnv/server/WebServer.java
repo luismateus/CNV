@@ -52,22 +52,19 @@ public class WebServer {
 			// Break it down into String[].
 			final String[] params = query.split("&");
 
-
-			// for(String p: params) {
-			// 	System.out.println(p);
-			// }
 			
 			// Store as if it was a direct call to SolverMain.
 			final ArrayList<String> newArgs = new ArrayList<>();
+			final ArrayList<String> to_send = new ArrayList<>();
 			for (final String p : params) {
 				final String[] splitParam = p.split("=");
 				newArgs.add("-" + splitParam[0]);
 				newArgs.add(splitParam[1]);
 
-				/*
-				System.out.println("splitParam[0]: " + splitParam[0]);
-				System.out.println("splitParam[1]: " + splitParam[1]);
-				*/
+				
+				// System.out.println("splitParam[0]: " + splitParam[0]);
+				// System.out.println("splitParam[1]: " + splitParam[1]);
+				
 			}
 
 			newArgs.add("-d");
@@ -80,14 +77,15 @@ public class WebServer {
 				i++;
 			}
 
-			/*
-			for(String ar : args) {
-				System.out.println("ar: " + ar);
-			} */
+			
+			// for(String ar : args) {
+			// 	System.out.println("ar: " + ar);
+			// } 
 
 			SolverArgumentParser ap = null;
 			try {
 				// Get user-provided flags.
+				InstrumentationMetrics.set_params(query); //maybe store params?
 				ap = new SolverArgumentParser(args);
 			}
 			catch(Exception e) {

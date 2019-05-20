@@ -12,6 +12,8 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package pt.ulisboa.tecnico.cnv.server;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,12 +97,10 @@ public class AmazonDynamoDBHandler {
 
     }
 
-    public static AmazonDynamoDB getDB(){
-        return this.dynamoDB;
-    }
+
 
     public static void main(String[] args) throws Exception {
-        //init();
+        init();
 
         try {
             String tableName = "cnv-metrics";
