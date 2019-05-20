@@ -122,11 +122,11 @@ public class AutoScaler {
         return ec2.getPendingInstances();
     }
 
-    public float getSystemCPUUsage(){
+    public double getSystemCPUUsage(){
         return ec2.getSystemCPUUsage();
     }
     
-    public float getInstanceCPUUsage(Instance instance){
+    public double getInstanceCPUUsage(Instance instance){
         return ec2.getInstanceCPUUsage(instance);
     }
 }

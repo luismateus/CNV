@@ -1,6 +1,20 @@
 #!/bin/bash
-export CLASSPATH="$CLASSPATH:BIT:BIT/samples:./"
+
+PATH=/home/ec2-user/CNV-proj
+#PATH=/home/hypz/Documents/workspace/CNV/CNV-proj
+
+
 _JAVA_OPTIONS="-XX:-UseSplitVerifier"
 
-javac pt/ulisboa/tecnico/cnv/server/InstrumentationMetrics.java
-java pt/ulisboa/tecnico/cnv/server/InstrumentationMetrics pt/ulisboa/tecnico/cnv/solver/AStarStrategy.class
+cd $PATH
+/bin/rm *.class
+/usr/bin/javac LaunchTask.java
+/usr/bin/javac CleanInstances.java
+/usr/bin/javac ScallingTask.java
+/usr/bin/javac TerminateTask.java
+/usr/bin/javac EC2.java
+/usr/bin/javac LoadBalancer.java
+/usr/bin/javac AutoScaler.java
+/usr/bin/javac Manager.java
+
+/usr/bin/java Manager

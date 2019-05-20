@@ -27,9 +27,9 @@ public class WebServer {
 
 	public static void main(final String[] args) throws Exception {
 		// LOCAL
-		//final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8000), 0);
+		final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8000), 0);
 		//REMOTE
-		final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+		//final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
 		server.createContext("/climb", new MyHandler());
 
@@ -55,7 +55,6 @@ public class WebServer {
 			
 			// Store as if it was a direct call to SolverMain.
 			final ArrayList<String> newArgs = new ArrayList<>();
-			final ArrayList<String> to_send = new ArrayList<>();
 			for (final String p : params) {
 				final String[] splitParam = p.split("=");
 				newArgs.add("-" + splitParam[0]);
@@ -85,7 +84,7 @@ public class WebServer {
 			SolverArgumentParser ap = null;
 			try {
 				// Get user-provided flags.
-				InstrumentationMetrics.set_params(query); //maybe store params?
+				InstrumentationMetrics.set_params(query); 
 				ap = new SolverArgumentParser(args);
 			}
 			catch(Exception e) {
