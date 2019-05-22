@@ -2,6 +2,7 @@
 #PATH=/home/hypz/Documents/workspace/CNV/CNV-proj
 PATH=/home/ec2-user/CNV-proj
 
+export CLASSPATH=$CLASSPATH:/home/ec2-user/aws-java-sdk-1.11.557/lib/aws-java-sdk-1.11.557.jar:/home/ec2-user/aws-java-sdk-1.11.557/third-party/lib/*:.
 
 
 cd $PATH

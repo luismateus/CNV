@@ -59,6 +59,7 @@ import java.io.ByteArrayInputStream;
 import java.lang.StringBuffer;
 import java.net.URL;
 import java.net.HttpURLConnection;
+import java.io.*;
 
 
 import javax.imageio.ImageIO;
@@ -128,10 +129,11 @@ public class LoadBalancer {
     public byte[] forwardRequest(HttpExchange request, Instance instance){
         try{
             ocupiedInstances.add(instance);
-            System.out.println(request.getRequestURI().getQuery());
+            System.out.println(instance.getPublicIpAddress());
             URL url = new URL("http://" + instance.getPublicIpAddress() + ":8000/climb?" + request.getRequestURI().getQuery());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
+            connection.setRequestMethod("POST");
+            
             byte[] response = new byte[connection.getContentLength()];
             DataInputStream rd = new DataInputStream(connection.getInputStream());    
             int readBytes = 0;
