@@ -31,7 +31,7 @@ public class AutoScaler {
 
     private static AutoScaler autoScaler;
     private boolean terminateNextFlag;
-
+    private boolean first;
     private static EC2 ec2;
 
     // Starts the dynamic and automatic process of managing the number of running instances

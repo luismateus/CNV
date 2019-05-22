@@ -39,6 +39,7 @@ import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
+import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification;
 
 
 import com.amazonaws.services.ec2.model.DescribeRegionsResult;
@@ -73,7 +74,7 @@ public class EC2 {
 
     public EC2(String manager){
         try{
-            initManager();
+            //initManager();
         }catch(Exception e){
             System.out.println("Caught Exception: " + e.getMessage());
         }
@@ -84,39 +85,39 @@ public class EC2 {
         return this.pending;
     }
 
-    // MUDAR AS KEYS E CENAS
-    private void initManager() throws Exception {
-        AWSCredentials credentials = null;
-        try {
-            credentials = new ProfileCredentialsProvider().getCredentials();
+    // // MUDAR AS KEYS E CENAS
+    // private void initManager() throws Exception {
+    //     //AWSCredentials credentials = null;
+    //    // try {
+    //         //credentials = new ProfileCredentialsProvider().getCredentials();
 
-            //load ec2 properties from file
-            FileReader reader=new FileReader("config.cfg");
-            Properties p=new Properties();
-            p.load(reader);
+    //         //load ec2 properties from file
+    //         FileReader reader=new FileReader("config.cfg");
+    //         Properties p=new Properties();
+    //         p.load(reader);
 
-            /*ami = p.getProperty("ami"); ISTO TEM QUE MUDAR PARA LANÇAR O MANAGER PARA A IMAGEM DO MANAGER */
-            key_file = p.getProperty("key_file");
-            security_group = p.getProperty("security_group");
+    //         /*ami = p.getProperty("ami"); ISTO TEM QUE MUDAR PARA LANÇAR O MANAGER PARA A IMAGEM DO MANAGER */
+    //         key_file = p.getProperty("key_file");
+    //         security_group = p.getProperty("security_group");
 
 
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. " +
-                    "Please make sure that your credentials file is at the correct " +
-                    "location (~/.aws/credentials), and is in valid format.",
-                    e);
-        }
-        if(ec2==null){
-            ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
-        }
-    }
+    //   /*  } catch (Exception e) {
+    //         throw new AmazonClientException(
+    //                 "Cannot load the credentials from the credential profiles file. " +
+    //                 "Please make sure that your credentials file is at the correct " +
+    //                 "location (~/.aws/credentials), and is in valid format.",
+    //                 e);
+    //     }*/
+    //     if(ec2==null){
+    //         ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+    //     }
+    // }
 
     private void init() throws Exception {
-        AWSCredentials credentials = null;
+        /*AWSCredentials credentials = null;
         try {
             credentials = new ProfileCredentialsProvider().getCredentials();
-
+            */
             //load ec2 properties from file
             FileReader reader=new FileReader("config.cfg");
             Properties p=new Properties();
@@ -126,17 +127,17 @@ public class EC2 {
             key_file = p.getProperty("key_file");
             security_group = p.getProperty("security_group");
 
-
+            /*
         } catch (Exception e) {
             throw new AmazonClientException(
                     "Cannot load the credentials from the credential profiles file. " +
                     "Please make sure that your credentials file is at the correct " +
                     "location (~/.aws/credentials), and is in valid format.",
                     e);
-        }
+        }*/
         if(ec2==null){
-            ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
-            cloudWatch = AmazonCloudWatchClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+            ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").build();
+            cloudWatch = AmazonCloudWatchClientBuilder.standard().withRegion("us-east-1").build();
         }
     }
     
@@ -258,16 +259,21 @@ public class EC2 {
         System.out.println("\u001B[92m" + "================= LAUNCHING NEW INSTANCE =================");
         try {
 
-            DescribeAvailabilityZonesResult availabilityZonesResult = ec2.describeAvailabilityZones();
             RunInstancesRequest runInstancesRequest =
                new RunInstancesRequest();
+            
+            IamInstanceProfileSpecification profile = new IamInstanceProfileSpecification();
+
+            profile.setArn("arn:aws:iam::240593726392:instance-profile/cnv-project-role");
+           
 
             runInstancesRequest.withImageId(ami)
                                .withInstanceType("t2.micro")
                                .withMinCount(1)
                                .withMaxCount(1)
                                .withKeyName(key_file)
-                               .withSecurityGroups(security_group);
+                               .withSecurityGroups(security_group)
+                               .withIamInstanceProfile(profile);
             RunInstancesResult runInstancesResult =
                ec2.runInstances(runInstancesRequest);
             String newInstanceId = runInstancesResult.getReservation().getInstances()

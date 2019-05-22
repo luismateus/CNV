@@ -59,7 +59,7 @@ public class InstrumentationMetrics {
          * credential profile by reading from the credentials file located at
          * (~/.aws/credentials).
          */
-        ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider();
+        /*ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider();
         try {
             credentialsProvider.getCredentials();
         } catch (Exception e) {
@@ -68,9 +68,8 @@ public class InstrumentationMetrics {
                     "Please make sure that your credentials file is at the correct " +
                     "location (~/.aws/credentials), and is in valid format.",
                     e);
-        }
+        }*/
         dynamoDB = AmazonDynamoDBClientBuilder.standard()
-            .withCredentials(credentialsProvider)
             .withRegion("us-east-1")
             .build();
 
