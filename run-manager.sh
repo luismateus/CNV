@@ -7,7 +7,7 @@ PATH=/home/ec2-user/CNV-proj
 _JAVA_OPTIONS="-XX:-UseSplitVerifier"
 
 cd $PATH
-/bin/rm *.class
+/bin/rm -f *.class
 /usr/bin/javac LaunchTask.java
 /usr/bin/javac CleanInstances.java
 /usr/bin/javac ScallingTask.java
