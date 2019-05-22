@@ -104,7 +104,7 @@ public class AutoScaler {
         try{
             Timer time = new Timer(); 
             ScallingTask scallingTask = new ScallingTask();
-            time.schedule(scallingTask, 0, 5000);    
+            time.schedule(scallingTask, 0, 10000);    
         }catch(Exception e){
             System.out.println(e.getMessage());
         }

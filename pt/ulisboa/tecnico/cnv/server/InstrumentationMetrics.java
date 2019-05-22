@@ -147,7 +147,7 @@ public class InstrumentationMetrics {
                 }
             }
             ci.addAfter("InstrumentationMetrics", "storeMetrics", "null");
-            ci.write("metricsOutput");
+            ci.write("metrics-output");
         }
         Metrics metric = metricsPerThread.get(Thread.currentThread().getId());
         metric.bb_count = 0;

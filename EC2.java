@@ -211,17 +211,12 @@ public class EC2 {
 
 
     public void instanceMetricsReport(){
-        DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
-        List<Reservation> reservations = describeInstancesRequest.getReservations();
-        Set<Instance> instances = new HashSet<Instance>();
-        Map<Instance, Double> instancesCPUUsage = new HashMap<Instance,Double>();
+        this.instancesCPUUsage = new HashMap<Instance,Double>();
+        ArrayList<Instance> instances = getInstances();
 
-        for (Reservation reservation : reservations) {
-            instances.addAll(reservation.getInstances());
-        }
-        //System.out.println("total instances = " + instances.size());
+        System.out.println("total instances = " + instances.size());
 
-        long offsetInMilliseconds = 1000 * 5;
+        long offsetInMilliseconds = 1000 * 60 * 10;
 
         Dimension instanceDimension = new Dimension();
         instanceDimension.setName("InstanceId");
@@ -234,7 +229,7 @@ public class EC2 {
             if (state.equals("running")) { 
                 //System.out.println("running instance id = " + name);
                 instanceDimension.setValue(name);
-        //System.out.println("HERE1!");
+        System.out.println("HERE1!");
         GetMetricStatisticsRequest request = new GetMetricStatisticsRequest()
             .withStartTime(new Date(new Date().getTime() - offsetInMilliseconds))
             .withNamespace("AWS/EC2")
@@ -243,15 +238,12 @@ public class EC2 {
             .withStatistics("Average")
             .withDimensions(instanceDimension)
             .withEndTime(new Date());
-            //System.out.println("HERE2!");
-                GetMetricStatisticsResult getMetricStatisticsResult = 
-                    cloudWatch.getMetricStatistics(request);
+            GetMetricStatisticsResult getMetricStatisticsResult = cloudWatch.getMetricStatistics(request);
                 List<Datapoint> datapoints = getMetricStatisticsResult.getDatapoints();
                 for (Datapoint dp : datapoints) {
-                //System.out.println("HERE3!");
-                //System.out.println(" CPU utilization for instance " + name + " = " + dp.getAverage());
+                System.out.println(" CPU utilization for instance " + name + " = " + dp.getAverage());
                 double cpu = dp.getAverage();
-                instancesCPUUsage.put(instance,cpu);
+                this.instancesCPUUsage.put(instance,cpu);
                 }
             }else{
                 //System.out.println("instance id = " + name);
@@ -315,8 +307,9 @@ public class EC2 {
     //RETURN 
     public double getSystemCPUUsage(){
         double CPUUsage = 0;
-        instanceMetricsReport();
+        //instanceMetricsReport();
         ArrayList<Instance> instances = getInstances();
+        //System.out.println(this.instances.get(0).getInstanceId());
         for(Instance instance : instances){
 
             String name = instance.getInstanceId();
@@ -329,7 +322,7 @@ public class EC2 {
     }
 
     public double getInstanceCPUUsage(Instance instance){
-        //System.out.println("min_cpu: " +  instancesCPUUsage.get(instance));
+        //System.out.println(instancesCPUUsage.get(instance)*100);
         //return instancesCPUUsage.get(instance)*100; //to percentage?
         double dummy = 10;
         return dummy;

@@ -23,8 +23,9 @@ public class ScallingTask extends TimerTask {
     }
 
     public void update(){
-        ArrayList<Instance> runningInstances = AutoScaler.getAutoScaler().getInstances();
-        ArrayList<Instance> occupiedInstances = LoadBalancer.getLoadBalancer().getOccupiedInstances();
+        this.runningInstances = AutoScaler.getAutoScaler().getInstances();
+        //System.out.println(runningInstances.get(0).getInstanceId()); //HERE!!!!!
+        this.occupiedInstances = LoadBalancer.getLoadBalancer().getOccupiedInstances();
         this.running = runningInstances.size();
         this.pending = AutoScaler.getAutoScaler().getPendingInstances();
     }
@@ -34,14 +35,17 @@ public class ScallingTask extends TimerTask {
             AutoScaler.getAutoScaler().launch();
             return;
         }
-        if(this.pending != 0 && this.running == 1)
+        if(this.pending == 1 && this.running == 0)
             return;
         if(getSystemCPUUsage() > MAX_CPU_USAGE * MAX_CPU_USAGE_BEFORE_LAUNCH){
             AutoScaler.getAutoScaler().launch();
             return;
         }
         if(getSystemCPUUsage() < MAX_CPU_USAGE * MIN_CPU_USAGE_BEFORE_TERMINATE){
-            terminateAnInstance();
+            if(this.running > 1){
+                terminateAnInstance();  
+            }
+
             return;
         }
     }
