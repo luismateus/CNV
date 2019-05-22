@@ -77,38 +77,37 @@ public class LoadBalancer {
     public static LoadBalancer getLoadBalancer(){ 
         if (loadBalancer == null)
             loadBalancer = new LoadBalancer();
-            try{
-                init();
-            }catch(Exception e){
-                throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. " +
-                    "Please make sure that your credentials file is at the correct " +
-                    "location (~/.aws/credentials), and is in valid format.",
-                    e);
-            }
+            //try{
+            init();
+            // }catch(Exception e){
+            //     throw new AmazonClientException(
+            //         "Cannot load the credentials from the credential profiles file. " +
+            //         "Please make sure that your credentials file is at the correct " +
+            //         "location (~/.aws/credentials), and is in valid format.",
+            //         e);
+            // }
         return loadBalancer; 
     }
     
     
 
-    private static void init() throws Exception {
+    private static void init() {
         /*
          * The ProfileCredentialsProvider will return your [default]
          * credential profile by reading from the credentials file located at
          * (~/.aws/credentials).
          */
-        ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider();
-        try {
-            credentialsProvider.getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. " +
-                    "Please make sure that your credentials file is at the correct " +
-                    "location (~/.aws/credentials), and is in valid format.",
-                    e);
-        }
+        // ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider();
+        // try {
+        //     credentialsProvider.getCredentials();
+        // } catch (Exception e) {
+        //     throw new AmazonClientException(
+        //             "Cannot load the credentials from the credential profiles file. " +
+        //             "Please make sure that your credentials file is at the correct " +
+        //             "location (~/.aws/credentials), and is in valid format.",
+        //             e);
+        // }
         dynamoDB = AmazonDynamoDBClientBuilder.standard()
-            .withCredentials(credentialsProvider)
             .withRegion("us-east-1")
             .build();
 
@@ -129,6 +128,7 @@ public class LoadBalancer {
     public byte[] forwardRequest(HttpExchange request, Instance instance){
         try{
             ocupiedInstances.add(instance);
+            System.out.println(request.getRequestURI().getQuery());
             URL url = new URL("http://" + instance.getPublicIpAddress() + ":8000/climb?" + request.getRequestURI().getQuery());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");

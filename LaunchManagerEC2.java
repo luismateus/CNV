@@ -37,6 +37,8 @@ import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
 import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 
+import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification;
+
 
 import com.amazonaws.services.ec2.model.DescribeRegionsResult;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
@@ -56,25 +58,27 @@ public class LaunchManagerEC2 {
 
     private static void init() throws Exception {
 
+        /*
+
         AWSCredentials credentials = null;
         try {
             credentials = new ProfileCredentialsProvider().getCredentials();
-
+            */
             FileReader reader=new FileReader("config.cfg");
             Properties p=new Properties();
             p.load(reader);
             ami = p.getProperty("manager_ami");
             key_file = p.getProperty("key_file");
             security_group = p.getProperty("security_group");
-
+/*
         } catch (Exception e) {
             throw new AmazonClientException(
                     "Cannot load the credentials from the credential profiles file. " +
                     "Please make sure that your credentials file is at the correct " +
                     "location (~/.aws/credentials), and is in valid format.",
                     e);
-        }
-    ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+        }*/
+    ec2 = AmazonEC2ClientBuilder.standard().withRegion("us-east-1").build();
 }
 
 
@@ -87,16 +91,21 @@ public class LaunchManagerEC2 {
        
         init();
         try {
-            DescribeAvailabilityZonesResult availabilityZonesResult = ec2.describeAvailabilityZones();
             RunInstancesRequest runInstancesRequest =
                new RunInstancesRequest();
+
+            IamInstanceProfileSpecification profile = new IamInstanceProfileSpecification();
+            
+            // TODO: copy-paste the ARN you copied from the role you created.
+            profile.setArn("arn:aws:iam::240593726392:instance-profile/cnv-project-role");
 
             runInstancesRequest.withImageId(ami)
                                .withInstanceType("t2.micro")
                                .withMinCount(1)
                                .withMaxCount(1)
                                .withKeyName(key_file)
-                               .withSecurityGroups(security_group);
+                               .withSecurityGroups(security_group)
+                               .withIamInstanceProfile(profile);
             RunInstancesResult runInstancesResult =
                ec2.runInstances(runInstancesRequest);
             String newInstanceId = runInstancesResult.getReservation().getInstances()
