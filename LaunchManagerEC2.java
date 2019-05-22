@@ -63,7 +63,7 @@ public class LaunchManagerEC2 {
             FileReader reader=new FileReader("config.cfg");
             Properties p=new Properties();
             p.load(reader);
-            ami = p.getProperty("ami");
+            ami = p.getProperty("manager_ami");
             key_file = p.getProperty("key_file");
             security_group = p.getProperty("security_group");
 
