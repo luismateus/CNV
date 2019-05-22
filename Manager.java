@@ -44,9 +44,9 @@ public class Manager {
     
 	public static void main(final String[] args) throws Exception {
 		// LOCAL
-		final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8000), 0);
+		//final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8000), 0);
 		// REMOTE
-		//final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+		final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         
 		server.createContext("/climb", new HandleRequest(autoScaler, loadBalancer));
 
