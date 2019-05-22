@@ -5,7 +5,7 @@ PATH=/home/ec2-user/CNV-proj
 
 
 cd $PATH
-/bin/rm *.class
+/bin/rm pt/ulisboa/tecnico/cnv/server/*.class
 /usr/bin/javac pt/ulisboa/tecnico/cnv/server/InstrumentationMetrics.java
 #java pt/ulisboa/tecnico/cnv/server/InstrumentationMetrics pt/ulisboa/tecnico/cnv/solver/*.class
 /usr/bin/javac pt/ulisboa/tecnico/cnv/server/WebServer.java
