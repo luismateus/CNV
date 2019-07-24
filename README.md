@@ -128,4 +128,4 @@ To know more about the generator strategies, check these classes:
 	pt.ulisboa.tecnico.cnv.generator.PyramidStrategy
 	pt.ulisboa.tecnico.cnv.generator.RampTestStrategy
 	***pt.ulisboa.tecnico.cnv.generator.RandomHillStrategy***
-	pt.ulisboa.tecnico.cnv.generator.SinusoidalStrategy
+	pt.ulisboa.tecnico.cnv.generator.SinusoidalStrategy# CNV
